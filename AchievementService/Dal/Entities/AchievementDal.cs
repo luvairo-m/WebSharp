@@ -5,17 +5,24 @@ using Core.Entities;
 
 namespace Dal.Entities;
 
-[Table("achievement")]
+[Table("Achievements")]
 public record AchievementDal : BaseEntity<Guid>
 {
     [Required]
     [StringLength(30)]
     public string? Title { get; init; }
 
-    [DefaultValue(1)]
-    [Range(1, 100)]
-    public int Points { get; init; }
+    [StringLength(100)]
+    [DefaultValue("No description.")]
+    public string? Description { get; init; }
 
     [StringLength(100)]
-    public string? Description { get; init; }
+    public string? ImageUrl { get; init; }
+    
+    [Range(1, 100)]
+    public int Points { get; init; }
+    
+    [Required]
+    [ForeignKey("UserId")]
+    public ICollection<UserDal>? Users { get; init; }
 }

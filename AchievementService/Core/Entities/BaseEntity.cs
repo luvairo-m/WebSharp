@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Core.Entities;
 
 public record BaseEntity<T>
 {
-    public T Id { get; init; }
+    [Required]
+    public T? Id { get; init; }
 }
