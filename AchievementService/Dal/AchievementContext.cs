@@ -9,6 +9,9 @@ public sealed class AchievementContext : DbContext
     {
     }
 
+    public DbSet<AchievementDal> Achievements { get; init; } = null!;
+    public DbSet<UserDal> Users { get; init; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -17,7 +20,4 @@ public sealed class AchievementContext : DbContext
             .WithMany(achievement => achievement.Users)
             .UsingEntity(builder => builder.ToTable("UserAchievement"));
     }
-
-    public DbSet<AchievementDal> Achievements { get; init; } = null!;
-    public DbSet<UserDal> Users { get; init; } = null!;
 }

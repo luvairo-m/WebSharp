@@ -19,6 +19,14 @@ public class AchievementController : ControllerBase
         this.manager = manager;
         this.mapper = mapper;
     }
+    
+    [HttpGet]
+    [ProducesResponseType(typeof(List<AchievementResponse>), 200)]
+    public async Task<IActionResult> GetAllAchievements()
+    {
+        var achievements = await manager.GetAllAchievements();
+        return Ok(achievements.Select(mapper.Map<AchievementResponse>));
+    }
 
     [HttpGet("{achievementGuid:guid}", Name = nameof(GetAchievement))]
     [ProducesResponseType(typeof(AchievementDto), 200)]
@@ -30,10 +38,9 @@ public class AchievementController : ControllerBase
         if (achievement != null)
             return Ok(achievement);
 
-        var errorResponse = new ErrorResponse(
-            "Id", $"Achievement with {achievementGuid} guid not found!");
+        var response = new ErrorResponse($"Achievement with {achievementGuid} Id not found!");
 
-        return NotFound(errorResponse);
+        return NotFound(response);
     }
 
     [HttpPost]
@@ -58,7 +65,7 @@ public class AchievementController : ControllerBase
     }
 
     [HttpOptions]
-    public IActionResult GetAllowedActions()
+    public IActionResult GetAllowedMethods()
     {
         Response.Headers.Add("Allow", "GET, POST, DELETE");
         return Ok();

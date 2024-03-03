@@ -7,5 +7,5 @@ namespace Dal.Entities;
 public record UserDal : BaseEntity<Guid>
 {
     [ForeignKey("AchievementId")]
-    public ICollection<AchievementDal> Achievements { get; init; }
+    public List<AchievementDal> Achievements { get; init; }
 }

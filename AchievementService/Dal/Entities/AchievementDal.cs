@@ -18,11 +18,11 @@ public record AchievementDal : BaseEntity<Guid>
 
     [StringLength(100)]
     public string? ImageUrl { get; init; }
-    
+
     [Range(1, 100)]
     public int Points { get; init; }
-    
+
     [Required]
     [ForeignKey("UserId")]
-    public ICollection<UserDal>? Users { get; init; }
+    public List<UserDal>? Users { get; init; }
 }

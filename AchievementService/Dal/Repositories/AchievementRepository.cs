@@ -12,14 +12,12 @@ public class AchievementRepository : IAchievementRepository
         context = achievementContext;
     }
 
-    public async Task<Guid> CreateAchievementAsync(AchievementDal achievement)
+    public async Task<bool> CreateAchievementAsync(AchievementDal achievementDal)
     {
-        var generated = achievement with { Id = Guid.NewGuid() };
-
-        await context.Achievements.AddAsync(generated);
+        var entity = await context.Achievements.AddAsync(achievementDal);
         await context.SaveChangesAsync();
 
-        return generated.Id;
+        return entity.State == EntityState.Unchanged;
     }
 
     public async Task<AchievementDal?> GetAchievementAsync(Guid achievementGuid)
@@ -27,17 +25,17 @@ public class AchievementRepository : IAchievementRepository
         return await context.Achievements.FindAsync(achievementGuid);
     }
 
-    public async Task<Guid> DeleteAchievementAsync(Guid achievementGuid)
+    public async Task<bool> DeleteAchievementAsync(Guid achievementGuid)
     {
         var foundEntity = await GetAchievementAsync(achievementGuid);
 
         if (foundEntity == null)
-            return achievementGuid;
+            return true;
 
-        context.Achievements.Remove(foundEntity);
+        var entity = context.Achievements.Remove(foundEntity);
         await context.SaveChangesAsync();
 
-        return achievementGuid;
+        return entity.State == EntityState.Deleted;
     }
 
     public async Task<UserDal?> GetUserAsync(Guid userGuid)
@@ -47,10 +45,9 @@ public class AchievementRepository : IAchievementRepository
             .FirstOrDefaultAsync(user => user.Id == userGuid);
     }
 
-    public async Task<ICollection<AchievementDal>> GetUserAchievementsAsync(Guid userGuid)
+    public async Task<List<AchievementDal>> GetAllAchievements()
     {
-        var userDal = await GetUserAsync(userGuid);
-        return userDal == null ? new List<AchievementDal>() : userDal.Achievements;
+        return await context.Achievements.ToListAsync();
     }
 
     public async Task<bool> AddAchievementToUserAsync(Guid userGuid, Guid achievementGuid)
@@ -58,10 +55,26 @@ public class AchievementRepository : IAchievementRepository
         var userDal = await GetUserAsync(userGuid);
         var achievementDal = await GetAchievementAsync(achievementGuid);
 
-        if (userDal == null || achievementDal == null)
+        if (achievementDal == null)
             return false;
 
-        userDal.Achievements.Add(achievementDal);
+        if (userDal == null)
+        {
+            var newUser = new UserDal
+            {
+                Id = userGuid,
+                Achievements = new List<AchievementDal> { achievementDal }
+            };
+
+            await context.Users.AddAsync(newUser);
+        }
+        else
+        {
+            if (!userDal.Achievements.Contains(achievementDal))
+                userDal.Achievements.Add(achievementDal);
+        }
+
+        await context.SaveChangesAsync();
 
         return true;
     }
@@ -70,13 +83,18 @@ public class AchievementRepository : IAchievementRepository
     {
         var userDal = await GetUserAsync(userGuid);
 
-        if (userDal == null || userDal.Achievements.Count == 0)
+        if (userDal == null)
+            return false;
+
+        if (userDal.Achievements.Count == 0)
             return true;
 
         var achievementDal = await GetAchievementAsync(achievementGuid);
 
         if (achievementDal != null)
             userDal.Achievements.Remove(achievementDal);
+
+        await context.SaveChangesAsync();
 
         return true;
     }

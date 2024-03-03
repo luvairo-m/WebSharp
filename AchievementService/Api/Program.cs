@@ -1,5 +1,6 @@
 using System.Reflection;
 using Api.Models.Request;
+using Api.Models.Response;
 using Dal;
 using Dal.Entities;
 using Dal.Repositories;
@@ -20,7 +21,10 @@ builder.Services.AddControllers(options =>
 builder.Services.AddAutoMapper(config =>
 {
     config.CreateMap<AchievementDal, AchievementDto>().ReverseMap();
-    config.CreateMap<CreateAchievementRequest, AchievementDto>().ReverseMap();
+    config.CreateMap<AchievementDto, AchievementResponse>().ReverseMap();
+    config.CreateMap<CreateAchievementRequest, AchievementDto>()
+        .ConstructUsing(src =>
+            new AchievementDto(Guid.Empty, src.Title!, src.Description!, src.ImageUrl, src.Points!.Value));
 }, Array.Empty<Assembly>());
 
 builder.Services.AddEndpointsApiExplorer();
