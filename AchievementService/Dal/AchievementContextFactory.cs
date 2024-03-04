@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Dal;
 
-public class AchievementContextFactory : IDesignTimeDbContextFactory<AchievementContext>
+public sealed class AchievementContextFactory : IDesignTimeDbContextFactory<AchievementContext>
 {
     private const string appSettings = "appsettings.json";
 

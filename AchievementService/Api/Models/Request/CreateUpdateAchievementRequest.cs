@@ -1,10 +1,16 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Api.Models.Request;
 
-public record CreateAchievementRequest
+public record CreateUpdateAchievementRequest
 {
+    [XmlIgnore]
+    [JsonIgnore]
+    public Guid Id { get; init; }
+
     [Required]
     [MaxLength(30)]
     public string? Title { get; init; }

@@ -1,11 +1,9 @@
 using System.Reflection;
+using Api.Extensions;
 using Api.Models.Request;
-using Api.Models.Response;
 using Dal;
 using Dal.Entities;
-using Dal.Repositories;
 using Logic.Entities;
-using Logic.Managers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,10 +19,7 @@ builder.Services.AddControllers(options =>
 builder.Services.AddAutoMapper(config =>
 {
     config.CreateMap<AchievementDal, AchievementDto>().ReverseMap();
-    config.CreateMap<AchievementDto, AchievementResponse>().ReverseMap();
-    config.CreateMap<CreateAchievementRequest, AchievementDto>()
-        .ConstructUsing(src =>
-            new AchievementDto(Guid.Empty, src.Title!, src.Description!, src.ImageUrl, src.Points!.Value));
+    config.CreateMap<CreateUpdateAchievementRequest, AchievementDto>();
 }, Array.Empty<Assembly>());
 
 builder.Services.AddEndpointsApiExplorer();
@@ -35,8 +30,8 @@ builder.Services.AddDbContext<AchievementContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
-builder.Services.AddTransient<IAchievementManager, AchievementManager>();
+builder.Services.AddUserAndAchievementLogicServices();
+builder.Services.AddUserAndAchievementRepositoriesWithManager();
 
 var app = builder.Build();
 

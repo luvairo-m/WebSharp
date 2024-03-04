@@ -10,6 +10,7 @@ public sealed class AchievementContext : DbContext
     }
 
     public DbSet<AchievementDal> Achievements { get; init; } = null!;
+
     public DbSet<UserDal> Users { get; init; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -2,72 +2,75 @@ using Api.Models.Request;
 using Api.Models.Response;
 using AutoMapper;
 using Logic.Entities;
-using Logic.Managers;
+using Logic.Services.AchievementService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[ApiController]
 [Route("api/v1/achievements")]
 [Produces("application/json", "application/xml")]
 public class AchievementController : ControllerBase
 {
-    private readonly IAchievementManager manager;
+    private readonly IAchievementService achievementService;
     private readonly IMapper mapper;
 
-    public AchievementController(IAchievementManager manager, IMapper mapper)
+    public AchievementController(IAchievementService achievementService, IMapper mapper)
     {
-        this.manager = manager;
+        this.achievementService = achievementService;
         this.mapper = mapper;
     }
-    
+
     [HttpGet]
-    [ProducesResponseType(typeof(List<AchievementResponse>), 200)]
+    [ProducesResponseType(typeof(IEnumerable<AchievementDto>), 200)]
     public async Task<IActionResult> GetAllAchievements()
     {
-        var achievements = await manager.GetAllAchievements();
-        return Ok(achievements.Select(mapper.Map<AchievementResponse>));
+        return Ok(await achievementService.GetAllAchievementsAsync());
     }
 
-    [HttpGet("{achievementGuid:guid}", Name = nameof(GetAchievement))]
+    [HttpGet("{achievementId:guid}", Name = nameof(GetAchievement))]
     [ProducesResponseType(typeof(AchievementDto), 200)]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
-    public async Task<IActionResult> GetAchievement(Guid achievementGuid)
+    public async Task<IActionResult> GetAchievement([FromRoute] Guid achievementId)
     {
-        var achievement = await manager.GetAchievementAsync(achievementGuid);
+        var achievement = await achievementService.GetAchievementByIdAsync(achievementId);
 
-        if (achievement != null)
-            return Ok(achievement);
+        return achievement != null
+            ? Ok(achievement)
+            : NotFound(new ErrorResponse($"Achievement with {achievementId} Id not found!"));
+    }
 
-        var response = new ErrorResponse($"Achievement with {achievementGuid} Id not found!");
-
-        return NotFound(response);
+    [HttpPut("{achievementId:guid}")]
+    [ProducesResponseType(204)]
+    public async Task<IActionResult> UpdateAchievement(
+        [FromRoute] Guid achievementId,
+        [FromBody] CreateUpdateAchievementRequest request)
+    {
+        var achievementDto = mapper.Map<AchievementDto>(request) with { Id = achievementId };
+        await achievementService.UpdateAchievementAsync(achievementDto);
+        return NoContent();
     }
 
     [HttpPost]
     [ProducesResponseType(typeof(Guid), 201)]
-    public async Task<IActionResult> CreateAchievement([FromBody] CreateAchievementRequest request)
+    public async Task<IActionResult> CreateAchievement([FromBody] CreateUpdateAchievementRequest request)
     {
-        var guid = await manager.CreateAchievementAsync(mapper.Map<AchievementDto>(request));
-
-        return CreatedAtAction(
-            nameof(GetAchievement),
-            new { achievementGuid = guid },
-            guid);
+        var guid = await achievementService.CreateAchievementAsync(mapper.Map<AchievementDto>(request));
+        return CreatedAtAction(nameof(GetAchievement), new { achievementId = guid }, guid);
     }
 
-    [HttpDelete("{achievementGuid:guid}")]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [HttpDelete("{achievementId:guid}")]
     [ProducesResponseType(204)]
-    public async Task<IActionResult> DeleteAchievement(Guid achievementGuid)
+    public async Task<IActionResult> DeleteAchievement([FromRoute] Guid achievementId)
     {
-        await manager.DeleteAchievementAsync(achievementGuid);
+        await achievementService.DeleteAchievementAsync(achievementId);
         return NoContent();
     }
 
     [HttpOptions]
     public IActionResult GetAllowedMethods()
     {
-        Response.Headers.Add("Allow", "GET, POST, DELETE");
+        var supportedMethods = $"{HttpMethods.Get}, {HttpMethods.Post}, {HttpMethods.Put}, {HttpMethods.Delete}";
+        Response.Headers.Add("Allow", supportedMethods);
         return Ok();
     }
 }
