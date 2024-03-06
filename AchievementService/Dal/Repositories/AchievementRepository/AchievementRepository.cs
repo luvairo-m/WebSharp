@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dal.Repositories.AchievementRepository;
 
-public class AchievementRepository : RepositoryBase<AchievementDal>, IAchievementRepository
+internal class AchievementRepository : RepositoryBase<AchievementDal>, IAchievementRepository
 {
     public AchievementRepository(AchievementContext achievementContext) : base(achievementContext)
     {

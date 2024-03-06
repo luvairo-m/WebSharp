@@ -1,9 +1,11 @@
 using System.Reflection;
-using Api.Extensions;
+using Api.Middlewares;
 using Api.Models.Request;
 using Dal;
 using Dal.Entities;
+using Dal.Extensions;
 using Logic.Entities;
+using Logic.Extensions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +36,8 @@ builder.Services.AddUserAndAchievementLogicServices();
 builder.Services.AddUserAndAchievementRepositoriesWithManager();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

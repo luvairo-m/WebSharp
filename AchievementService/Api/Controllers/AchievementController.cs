@@ -1,5 +1,4 @@
 using Api.Models.Request;
-using Api.Models.Response;
 using AutoMapper;
 using Logic.Entities;
 using Logic.Services.AchievementService;
@@ -32,11 +31,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(typeof(AchievementDto), 200)]
     public async Task<IActionResult> GetAchievement([FromRoute] Guid achievementId)
     {
-        var achievement = await achievementService.GetAchievementByIdAsync(achievementId);
-
-        return achievement != null
-            ? Ok(achievement)
-            : NotFound(new ErrorResponse($"Achievement with {achievementId} Id not found!"));
+        return Ok(await achievementService.GetAchievementByIdAsync(achievementId));
     }
 
     [HttpPut("{achievementId:guid}")]

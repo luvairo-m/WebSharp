@@ -2,10 +2,11 @@ using AutoMapper;
 using Dal.Entities;
 using Dal.RepositoryManagers;
 using Logic.Entities;
+using Logic.Helpers;
 
 namespace Logic.Services.AchievementService;
 
-public class AchievementService : IAchievementService
+internal class AchievementService : IAchievementService
 {
     private readonly IMapper mapper;
     private readonly IRepositoryManager repositoryManager;
@@ -26,8 +27,9 @@ public class AchievementService : IAchievementService
     {
         var achievementDal = await repositoryManager.Achievements
             .GetAchievementByIdAsync(achievementId, token: token);
+        ExceptionHelper.RaiseNotFoundWhenNull(achievementDal, achievementId);
 
-        return achievementDal == null ? null : mapper.Map<AchievementDto>(achievementDal);
+        return mapper.Map<AchievementDto>(achievementDal);
     }
 
     public async Task<Guid> CreateAchievementAsync(AchievementDto achievementDto, CancellationToken token = default)
@@ -43,12 +45,11 @@ public class AchievementService : IAchievementService
     public async Task UpdateAchievementAsync(AchievementDto achievementDto, CancellationToken token = default)
     {
         var achievementDal = mapper.Map<AchievementDal>(achievementDto);
-        var achievementExists = await repositoryManager.Achievements
-            .GetAchievementByIdAsync(achievementDto.Id, false, token) != null;
+        var achievementFound = await repositoryManager.Achievements
+            .GetAchievementByIdAsync(achievementDto.Id, false, token);
+        ExceptionHelper.RaiseNotFoundWhenNull(achievementFound, achievementDto.Id);
 
-        if (achievementExists)
-            repositoryManager.Achievements.UpdateAchievement(achievementDal);
-
+        repositoryManager.Achievements.UpdateAchievement(achievementDal);
         await repositoryManager.SaveChangesAsync(token);
     }
 
@@ -56,11 +57,9 @@ public class AchievementService : IAchievementService
     {
         var achievementDal = await repositoryManager.Achievements
             .GetAchievementByIdAsync(achievementId, token: token);
+        ExceptionHelper.RaiseNotFoundWhenNull(achievementDal, achievementId);
 
-        if (achievementDal != null)
-        {
-            repositoryManager.Achievements.DeleteAchievement(achievementDal);
-            await repositoryManager.SaveChangesAsync(token);
-        }
+        repositoryManager.Achievements.DeleteAchievement(achievementDal!);
+        await repositoryManager.SaveChangesAsync(token);
     }
 }

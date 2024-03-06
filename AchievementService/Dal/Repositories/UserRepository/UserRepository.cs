@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dal.Repositories.UserRepository;
 
-public class UserRepository : RepositoryBase<UserDal>, IUserRepository
+internal class UserRepository : RepositoryBase<UserDal>, IUserRepository
 {
     public UserRepository(AchievementContext achievementContext) : base(achievementContext)
     {
