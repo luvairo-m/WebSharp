@@ -12,9 +12,11 @@ public static class ExceptionHelper
 
         var entityType = typeof(TEntity);
 
-        if (entityType == typeof(AchievementDal)) throw new AchievementNotFoundException(entityId);
+        if (entityType == typeof(AchievementDal))
+            throw new AchievementNotFoundException(entityId);
 
-        if (entityType == typeof(UserDal)) throw new UserNotFoundException(entityId);
+        if (entityType == typeof(UserDal))
+            throw new UserNotFoundException(entityId);
 
         throw new NullReferenceException();
     }
