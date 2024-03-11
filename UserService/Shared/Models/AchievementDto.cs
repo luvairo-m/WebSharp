@@ -1,6 +1,6 @@
 namespace Shared.Models;
 
-public class AchievementDto
+public record AchievementDto
 {
     public string? Title { get; init; }
     public string? Description { get; init; }

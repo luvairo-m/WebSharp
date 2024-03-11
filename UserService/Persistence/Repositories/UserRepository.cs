@@ -14,25 +14,21 @@ public class UserRepository : IUserRepository
         this.userContext = userContext;
     }
 
-    public async Task<IEnumerable<UserDal>> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    public async Task<UserDal?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await userContext.Users
+            .Include(user => user.Info)
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+    }
+
+    public async Task<UserDal?> GetUserByIdWithoutTrackingAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
         return await userContext.Users
             .AsNoTracking()
             .Include(user => user.Info)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<UserDal?> GetUserByIdAsync(Guid userId, CancellationToken token = default)
-    {
-        var keyValues = new object[] { userId };
-        return await userContext.Users.FindAsync(keyValues, token);
-    }
-
-    public async Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken)
-    {
-        return await userContext.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken) != null;
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
     }
 
     public void CreateUser(UserDal user)

@@ -18,12 +18,6 @@ public class UserService : IUserService
         this.mapper = mapper;
     }
 
-    public async Task<IEnumerable<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
-    {
-        var users = await repositoryManager.Users.GetAllUsersAsync(cancellationToken);
-        return users.Select(mapper.Map<UserDto>);
-    }
-
     public async Task<UserDto> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await repositoryManager.Users.GetUserByIdAsync(userId, cancellationToken)
@@ -32,29 +26,37 @@ public class UserService : IUserService
         return mapper.Map<UserDto>(user);
     }
 
-    public async Task CreateUserAsync(UserDto userDto, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateUserAsync(UserDto userDto, CancellationToken cancellationToken = default)
     {
-        repositoryManager.Users.CreateUser(mapper.Map<UserDal>(userDto));
+        var user = mapper.Map<UserDal>(userDto);
+        repositoryManager.Users.CreateUser(user);
+
         await repositoryManager.SaveChangesAsync(cancellationToken);
+
+        return user.Id;
     }
 
     public async Task UpdateUserAsync(UserDto userDto, CancellationToken cancellationToken = default)
     {
-        if (!await repositoryManager.Users.UserExistsAsync(userDto.Id, cancellationToken))
+        var user = await repositoryManager.Users
+            .GetUserByIdWithoutTrackingAsync(userDto.Id, cancellationToken);
+
+        if (user == null)
             throw new UserNotFoundException(userDto.Id);
 
-        repositoryManager.Users.UpdateUser(mapper.Map<UserDal>(userDto));
+        var userDal = mapper.Map<UserDal>(userDto);
+        userDal.Info!.Id = user.Info!.Id;
+
+        repositoryManager.Users.UpdateUser(userDal);
         await repositoryManager.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        if (!await repositoryManager.Users.UserExistsAsync(userId, cancellationToken))
-            throw new UserNotFoundException(userId);
+        var user = await repositoryManager.Users.GetUserByIdWithoutTrackingAsync(userId, cancellationToken)
+                   ?? throw new UserNotFoundException(userId);
 
-        var userDto = await GetUserByIdAsync(userId, cancellationToken);
-        repositoryManager.Users.DeleteUser(mapper.Map<UserDal>(userDto));
-
+        repositoryManager.Users.DeleteUser(user);
         await repositoryManager.SaveChangesAsync(cancellationToken);
     }
 }
