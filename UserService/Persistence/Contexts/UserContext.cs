@@ -9,8 +9,8 @@ public class UserContext : DbContext
     {
     }
 
-    public DbSet<UserDal> Users { get; set; } = null!;
-    public DbSet<UserInfoDal> UsersInfo { get; set; } = null!;
+    public DbSet<UserDal> Users { get; init; } = null!;
+    public DbSet<UserInfoDal> UsersInfo { get; init; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

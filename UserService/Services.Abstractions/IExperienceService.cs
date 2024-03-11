@@ -8,4 +8,5 @@ public interface IExperienceService
         Guid userId,
         ExperienceDto experience,
         CancellationToken cancellationToken = default);
+    Task InvalidateUserAsync(Guid userId);
 }

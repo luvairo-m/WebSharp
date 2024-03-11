@@ -7,7 +7,7 @@ using Shared.Models;
 
 namespace Services;
 
-public class UserService : IUserService
+internal class UserService : IUserService
 {
     private readonly IMapper mapper;
     private readonly IRepositoryManager repositoryManager;

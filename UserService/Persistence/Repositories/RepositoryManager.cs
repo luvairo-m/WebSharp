@@ -3,7 +3,7 @@ using Persistence.Contexts;
 
 namespace Persistence.Repositories;
 
-public class RepositoryManager : IRepositoryManager
+internal class RepositoryManager : IRepositoryManager
 {
     private readonly UserContext userContext;
 

@@ -1,11 +1,9 @@
-using Domain.Repository;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Contexts;
-using Persistence.Repositories;
+using Persistence.Extensions;
 using Presentation.Controllers;
-using Services;
-using Services.Abstractions;
+using Services.Extensions;
 using Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,10 +29,8 @@ builder.Services.AddDbContext<UserContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IExperienceService, ExperienceService>();
+builder.Services.AddUserRepositoryWithManager();
+builder.Services.AddUserAndExperienceServices();
 
 var app = builder.Build();
 

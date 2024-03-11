@@ -5,7 +5,7 @@ using Shared.Models;
 
 namespace Services;
 
-public class ExperienceService : IExperienceService
+internal class ExperienceService : IExperienceService
 {
     private const int pointsPerLevel = 300;
     private readonly IRepositoryManager repositoryManager;
@@ -37,5 +37,11 @@ public class ExperienceService : IExperienceService
 
         repositoryManager.Users.UpdateUser(updatedUser);
         await repositoryManager.SaveChangesAsync(cancellationToken);
+    }
+
+    // Точка расширения для задания с Http-взаимодействием.
+    public Task InvalidateUserAsync(Guid userId)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -1,5 +1,6 @@
 namespace Shared.Models;
 
+// Модель для Http-взаимодействия с AchievementService.
 public record AchievementDto
 {
     public string? Title { get; init; }
