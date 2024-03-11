@@ -12,6 +12,7 @@ public class MappingProfile : Profile
         SetMap_CreateUserRequestToUserDto();
         SetMap_UserDalToUserDto();
         SetMap_UserDtoToUserDal();
+        SetMap_AddUserExperienceRequestToExperienceDto();
     }
 
     private void SetMap_UserDtoToUserDal()
@@ -51,5 +52,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CurrentPoints, opt => opt.Ignore())
             .ForMember(dest => dest.Level, opt => opt.Ignore())
             .ForMember(dest => dest.Achievements, opt => opt.Ignore());
+    }
+
+    private void SetMap_AddUserExperienceRequestToExperienceDto()
+    {
+        CreateMap<UserExperienceRequest, ExperienceDto>();
     }
 }

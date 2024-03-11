@@ -21,20 +21,20 @@ public class UserController : ControllerBase
         this.mapper = mapper;
     }
 
-    [HttpGet("{userId:guid}", Name = nameof(GetUserInfo))]
-    [ProducesResponseType(typeof(IEnumerable<UserDto>), 200)]
-    [ProducesResponseType(404)]
-    public async Task<IActionResult> GetUserInfo([FromRoute] Guid userId)
-    {
-        return Ok(await userService.GetUserByIdAsync(userId));
-    }
-
     [HttpPost]
     [ProducesResponseType(typeof(Guid), 201)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
         var guid = await userService.CreateUserAsync(mapper.Map<UserDto>(request));
         return CreatedAtAction(nameof(GetUserInfo), new { userId = guid }, guid);
+    }
+
+    [HttpGet("{userId:guid}", Name = nameof(GetUserInfo))]
+    [ProducesResponseType(typeof(IEnumerable<UserDto>), 200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetUserInfo([FromRoute] Guid userId)
+    {
+        return Ok(await userService.GetUserByIdAsync(userId));
     }
 
     [HttpPut("{userId:guid}")]

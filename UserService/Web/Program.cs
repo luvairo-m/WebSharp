@@ -6,6 +6,7 @@ using Persistence.Repositories;
 using Presentation.Controllers;
 using Services;
 using Services.Abstractions;
+using Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +34,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
