@@ -4,7 +4,7 @@ namespace HttpLogic.Contracts;
 
 public interface IHttpRequestService
 {
-    Task<HttpResponse<TResponse>> SendRequestAsync<TResponse>(
+    Task<HttpResponseData<TResponse>> SendRequestAsync<TResponse>(
         HttpRequestData requestData,
         HttpConnectionData connectionData = default);
 }

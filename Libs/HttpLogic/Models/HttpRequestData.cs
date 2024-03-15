@@ -7,7 +7,5 @@ public abstract record HttpRequestData
     public object Body { get; set; } = null!;
     public ContentType ContentType { get; set; } = ContentType.ApplicationJson;
     public IDictionary<string, string> HeaderDictionary { get; set; } = new Dictionary<string, string>();
-
-    public ICollection<KeyValuePair<string, string>> QueryParameterList { get; set; } =
-        new List<KeyValuePair<string, string>>();
+    public IDictionary<string, string> QueryDictionary { get; set; } = new Dictionary<string, string>();
 }

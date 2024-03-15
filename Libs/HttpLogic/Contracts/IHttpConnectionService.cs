@@ -9,6 +9,6 @@ public interface IHttpConnectionService
     Task<HttpResponseMessage> SendRequestAsync(
         HttpRequestMessage httpRequestMessage,
         HttpClient httpClient,
-        CancellationToken cancellationToken,
-        HttpCompletionOption httpCompletionOption = HttpCompletionOption.ResponseContentRead);
+        HttpCompletionOption httpCompletionOption = HttpCompletionOption.ResponseContentRead,
+        CancellationToken cancellationToken = default);
 }
