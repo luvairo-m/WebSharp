@@ -1,7 +1,8 @@
 namespace HttpLogic.Models;
 
-public record struct HttpConnectionData(string ClientName)
+public readonly struct HttpConnectionData
 {
-    public TimeSpan? Timeout { get; set; } = null;
-    public CancellationToken CancellationToken { get; set; } = default;
+    public string? ClientName { get; init; }
+    public TimeSpan? Timeout { get; init; }
+    public CancellationToken CancellationToken { get; init; }
 }

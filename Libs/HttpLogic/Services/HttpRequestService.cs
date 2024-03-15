@@ -1,11 +1,12 @@
 using HttpLogic.Contracts;
 using HttpLogic.Models;
 using Microsoft.AspNetCore.WebUtilities;
+using Polly;
 using ContentType = HttpLogic.Models.ContentType;
 
 namespace HttpLogic.Services;
 
-public class HttpRequestService : IHttpRequestService
+internal class HttpRequestService : IHttpRequestService
 {
     private readonly IHttpConnectionService connectionService;
 
@@ -16,15 +17,16 @@ public class HttpRequestService : IHttpRequestService
 
     public async Task<HttpResponseData<TResponse>> SendRequestAsync<TResponse>(
         HttpRequestData requestData,
-        HttpConnectionData connectionData = default)
+        HttpConnectionData connectionData = default,
+        IAsyncPolicy? policy = null)
     {
         var client = connectionService.CreateHttpClient(connectionData);
         var httpRequestMessage = CreateHttpRequestMessage(requestData);
 
         var responseMessage = await connectionService
-            .SendRequestAsync(httpRequestMessage, client, cancellationToken: connectionData.CancellationToken);
+            .SendRequestAsync(client, httpRequestMessage, policy, cancellationToken: connectionData.CancellationToken);
 
-        var bodyContent = await GetParsedBodyContent<TResponse>(responseMessage);
+        var bodyContent = await GetBodyOfType<TResponse>(responseMessage);
 
         return new HttpResponseData<TResponse>
         {
@@ -35,7 +37,7 @@ public class HttpRequestService : IHttpRequestService
         };
     }
 
-    private static async Task<TResponse?> GetParsedBodyContent<TResponse>(HttpResponseMessage responseMessage)
+    private static async Task<TResponse?> GetBodyOfType<TResponse>(HttpResponseMessage responseMessage)
     {
         var contentType = ExtractContentType(responseMessage);
         var httpConverter = HttpContentConverterFactory.CreateConverter(contentType);

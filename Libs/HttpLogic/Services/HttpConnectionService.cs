@@ -1,9 +1,10 @@
 using HttpLogic.Contracts;
 using HttpLogic.Models;
+using Polly;
 
 namespace HttpLogic.Services;
 
-public class HttpConnectionService : IHttpConnectionService
+internal class HttpConnectionService : IHttpConnectionService
 {
     private readonly IHttpClientFactory clientFactory;
 
@@ -25,11 +26,14 @@ public class HttpConnectionService : IHttpConnectionService
     }
 
     public async Task<HttpResponseMessage> SendRequestAsync(
-        HttpRequestMessage httpRequestMessage,
         HttpClient httpClient,
+        HttpRequestMessage httpRequestMessage,
+        IAsyncPolicy? policy = null,
         HttpCompletionOption httpCompletionOption = HttpCompletionOption.ResponseContentRead,
         CancellationToken cancellationToken = default)
     {
-        return await httpClient.SendAsync(httpRequestMessage, httpCompletionOption, cancellationToken);
+        policy ??= Policy.NoOpAsync();
+        return await policy.ExecuteAsync(async () =>
+            await httpClient.SendAsync(httpRequestMessage, httpCompletionOption, cancellationToken));
     }
 }

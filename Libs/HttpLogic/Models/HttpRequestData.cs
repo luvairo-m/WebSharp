@@ -1,11 +1,11 @@
 namespace HttpLogic.Models;
 
-public abstract record HttpRequestData
+public record HttpRequestData
 {
-    public HttpMethod Method { get; set; } = null!;
-    public Uri Uri { set; get; } = null!;
-    public object Body { get; set; } = null!;
-    public ContentType ContentType { get; set; } = ContentType.ApplicationJson;
-    public IDictionary<string, string> HeaderDictionary { get; set; } = new Dictionary<string, string>();
-    public IDictionary<string, string> QueryDictionary { get; set; } = new Dictionary<string, string>();
+    public HttpMethod Method { get; init; } = null!;
+    public Uri Uri { get; init; } = null!;
+    public object Body { get; init; } = null!;
+    public ContentType ContentType { get; init; } = ContentType.ApplicationJson;
+    public IDictionary<string, string> HeaderDictionary { get; init; } = new Dictionary<string, string>();
+    public IDictionary<string, string> QueryDictionary { get; init; } = new Dictionary<string, string>();
 }
