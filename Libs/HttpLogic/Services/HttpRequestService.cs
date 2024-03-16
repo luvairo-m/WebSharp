@@ -62,7 +62,7 @@ internal class HttpRequestService : IHttpRequestService
     {
         var contentType = responseMessage.Content.Headers.ContentType;
 
-        if (contentType == null)
+        if (contentType == null || !responseMessage.IsSuccessStatusCode)
             return null;
 
         if (!contentTypes.TryGetValue(contentType.MediaType!, out var foundType))

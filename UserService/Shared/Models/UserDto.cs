@@ -14,5 +14,5 @@ public record UserDto
     public DateTime BirthDate { get; init; }
     public int Level { get; init; }
     public int CurrentPoints { get; init; }
-    public IEnumerable<AchievementDto> Achievements { get; init; } = new List<AchievementDto>();
+    public IList<AchievementDto> Achievements { get; init; } = new List<AchievementDto>();
 }

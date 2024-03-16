@@ -26,4 +26,10 @@
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="AchievementServiceConnectionLib">
+        <HintPath>..\..\Libs\AchievementServiceConnectionLib\bin\Debug\net7.0\AchievementServiceConnectionLib.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>
