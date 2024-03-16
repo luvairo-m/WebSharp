@@ -1,4 +1,5 @@
 using HttpLogic.Contracts;
+using HttpLogic.Extensions;
 using HttpLogic.Models;
 using Microsoft.AspNetCore.WebUtilities;
 using Polly;
@@ -8,6 +9,18 @@ namespace HttpLogic.Services;
 
 internal class HttpRequestService : IHttpRequestService
 {
+    private static readonly IDictionary<string, ContentType> contentTypes =
+        new Dictionary<string, ContentType>
+        {
+            ["application/json"] = ContentType.ApplicationJson,
+            ["application/x-www-form-urlencoded"] = ContentType.XWwwFormUrlEncoded,
+            ["application/xml"] = ContentType.ApplicationXml,
+            ["text/xml"] = ContentType.TextXml,
+            ["text/plain"] = ContentType.TextPlain,
+            ["application/jwt"] = ContentType.ApplicationJwt,
+            ["multipart/form-data"] = ContentType.MultipartFormData
+        };
+
     private readonly IHttpConnectionService connectionService;
 
     public HttpRequestService(IHttpConnectionService connectionService)
@@ -18,15 +31,22 @@ internal class HttpRequestService : IHttpRequestService
     public async Task<HttpResponseData<TResponse>> SendRequestAsync<TResponse>(
         HttpRequestData requestData,
         HttpConnectionData connectionData = default,
-        IAsyncPolicy? policy = null)
+        IAsyncPolicy<HttpResponseMessage>? resiliencePolicy = null,
+        CancellationToken cancellationToken = default) where TResponse : class
     {
-        var client = connectionService.CreateHttpClient(connectionData);
+        var client = connectionService.CreateHttpClient(connectionData.ClientName, connectionData.TimeOut);
         var httpRequestMessage = CreateHttpRequestMessage(requestData);
 
-        var responseMessage = await connectionService
-            .SendRequestAsync(client, httpRequestMessage, policy, cancellationToken: connectionData.CancellationToken);
+        resiliencePolicy ??= Policy.NoOpAsync<HttpResponseMessage>();
 
-        var bodyContent = await GetBodyOfType<TResponse>(responseMessage);
+        var responseMessage = await resiliencePolicy.ExecuteAsync(async () =>
+            await connectionService
+                .SendRequestAsync(
+                    client,
+                    await httpRequestMessage.ShallowCloneAsync(),
+                    cancellationToken: cancellationToken));
+
+        var bodyContent = await GetBodyOfTypeAsync<TResponse>(responseMessage);
 
         return new HttpResponseData<TResponse>
         {
@@ -37,12 +57,20 @@ internal class HttpRequestService : IHttpRequestService
         };
     }
 
-    private static async Task<TResponse?> GetBodyOfType<TResponse>(HttpResponseMessage responseMessage)
+    private static async Task<TResponse?> GetBodyOfTypeAsync<TResponse>(HttpResponseMessage responseMessage)
+        where TResponse : class
     {
-        var contentType = ExtractContentType(responseMessage);
-        var httpConverter = HttpContentConverterFactory.CreateConverter(contentType);
+        var contentType = responseMessage.Content.Headers.ContentType;
 
-        return await httpConverter.ConvertFromHttpContent<TResponse>(responseMessage.Content);
+        if (contentType == null)
+            return null;
+
+        if (!contentTypes.TryGetValue(contentType.MediaType!, out var foundType))
+            throw new NotSupportedException($"{contentType.MediaType!} ContentType not supported!");
+
+        return await HttpContentConverterFactory
+            .CreateConverter(foundType)
+            .ConvertFromHttpContent<TResponse>(responseMessage.Content);
     }
 
     private static HttpRequestMessage CreateHttpRequestMessage(HttpRequestData requestData)
@@ -62,25 +90,5 @@ internal class HttpRequestService : IHttpRequestService
             httpRequestMessage.Headers.Add(headerPair.Key, headerPair.Value);
 
         return httpRequestMessage;
-    }
-
-    private static ContentType ExtractContentType(HttpResponseMessage response)
-    {
-        if (response.Content.Headers.ContentType == null)
-            return ContentType.Unknown;
-
-        var mediaType = response.Content.Headers.ContentType.MediaType;
-
-        return mediaType switch
-        {
-            "application/json" => ContentType.ApplicationJson,
-            "application/x-www-form-urlencoded" => ContentType.XWwwFormUrlEncoded,
-            "application/xml" => ContentType.ApplicationXml,
-            "multipart/form-data" => ContentType.MultipartFormData,
-            "text/xml" => ContentType.TextXml,
-            "text/plain" => ContentType.TextPlain,
-            "application/jwt" => ContentType.ApplicationJwt,
-            _ => ContentType.Unknown
-        };
     }
 }

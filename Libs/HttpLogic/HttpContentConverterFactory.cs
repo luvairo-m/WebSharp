@@ -14,8 +14,8 @@ public static class HttpContentConverterFactory
             ContentType.TextXml => new XmlContentConverter(),
             ContentType.Binary => new ByteContentConverter(),
             ContentType.XWwwFormUrlEncoded => new XWwwFormUrlEncodedConverter(),
+            ContentType.TextPlain => new TextPlainContentConverter(),
             ContentType.MultipartFormData => throw new NotSupportedException(),
-            ContentType.TextPlain => throw new NotSupportedException(),
             ContentType.ApplicationJwt => throw new NotSupportedException(),
             ContentType.Unknown => throw new NotSupportedException(),
             _ => throw new ArgumentOutOfRangeException(nameof(contentType), contentType, null)

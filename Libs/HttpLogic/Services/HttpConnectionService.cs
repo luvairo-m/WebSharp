@@ -1,6 +1,4 @@
 using HttpLogic.Contracts;
-using HttpLogic.Models;
-using Polly;
 
 namespace HttpLogic.Services;
 
@@ -13,14 +11,14 @@ internal class HttpConnectionService : IHttpConnectionService
         this.clientFactory = clientFactory;
     }
 
-    public HttpClient CreateHttpClient(HttpConnectionData httpConnectionData)
+    public HttpClient CreateHttpClient(string? clientName = null, TimeSpan? timeOut = null)
     {
-        var client = string.IsNullOrWhiteSpace(httpConnectionData.ClientName)
+        var client = string.IsNullOrWhiteSpace(clientName)
             ? clientFactory.CreateClient()
-            : clientFactory.CreateClient(httpConnectionData.ClientName);
+            : clientFactory.CreateClient(clientName);
 
-        if (httpConnectionData.Timeout != null)
-            client.Timeout = httpConnectionData.Timeout.Value;
+        if (timeOut != null)
+            client.Timeout = timeOut.Value;
 
         return client;
     }
@@ -28,12 +26,9 @@ internal class HttpConnectionService : IHttpConnectionService
     public async Task<HttpResponseMessage> SendRequestAsync(
         HttpClient httpClient,
         HttpRequestMessage httpRequestMessage,
-        IAsyncPolicy? policy = null,
         HttpCompletionOption httpCompletionOption = HttpCompletionOption.ResponseContentRead,
         CancellationToken cancellationToken = default)
     {
-        policy ??= Policy.NoOpAsync();
-        return await policy.ExecuteAsync(async () =>
-            await httpClient.SendAsync(httpRequestMessage, httpCompletionOption, cancellationToken));
+        return await httpClient.SendAsync(httpRequestMessage, httpCompletionOption, cancellationToken);
     }
 }

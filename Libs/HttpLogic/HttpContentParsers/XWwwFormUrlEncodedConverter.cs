@@ -1,9 +1,12 @@
+using System.Net.Http.Headers;
 using System.Web;
 
 namespace HttpLogic.HttpContentParsers;
 
 public class XWwwFormUrlEncodedConverter : IHttpContentConverter
 {
+    public MediaTypeHeaderValue MediaType => new("application/x-www-form-urlencoded");
+
     public HttpContent ConvertToHttpContent(object value)
     {
         if (value is IEnumerable<KeyValuePair<string, string>> list)

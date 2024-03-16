@@ -6,6 +6,8 @@ namespace HttpLogic.HttpContentParsers;
 
 public class XmlContentConverter : IHttpContentConverter
 {
+    public MediaTypeHeaderValue MediaType => new("application/xml");
+
     public HttpContent ConvertToHttpContent(object value)
     {
         var stringBuilder = new StringBuilder();
@@ -14,10 +16,7 @@ public class XmlContentConverter : IHttpContentConverter
         using var writer = new StringWriter(stringBuilder);
         xmlSerializer.Serialize(writer, value);
 
-        return new StringContent(
-            stringBuilder.ToString(),
-            Encoding.UTF8,
-            new MediaTypeHeaderValue("application/xml"));
+        return new StringContent(stringBuilder.ToString(), Encoding.UTF8, MediaType);
     }
 
     public async Task<TOutput?> ConvertFromHttpContent<TOutput>(HttpContent httpContent)
