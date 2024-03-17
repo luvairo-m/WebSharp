@@ -1,3 +1,4 @@
+using AchievementServiceConnectionLib.Contracts;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Models;
@@ -9,12 +10,17 @@ namespace Services;
 
 internal class UserService : IUserService
 {
+    private readonly IAchievementConnectionService connectionService;
     private readonly IMapper mapper;
     private readonly IRepositoryManager repositoryManager;
 
-    public UserService(IRepositoryManager repositoryManager, IMapper mapper)
+    public UserService(
+        IRepositoryManager repositoryManager,
+        IAchievementConnectionService connectionService,
+        IMapper mapper)
     {
         this.repositoryManager = repositoryManager;
+        this.connectionService = connectionService;
         this.mapper = mapper;
     }
 
@@ -23,7 +29,23 @@ internal class UserService : IUserService
         var user = await repositoryManager.Users.GetUserByIdAsync(userId, cancellationToken)
                    ?? throw new UserNotFoundException(userId);
 
-        return mapper.Map<UserDto>(user);
+        var userDto = mapper.Map<UserDto>(user);
+
+        var userAchievements = await connectionService
+            .GetUserAchievementsAsync(userId, cancellationToken);
+
+        foreach (var achievement in userAchievements)
+        {
+            userDto.Achievements.Add(new AchievementDto
+            {
+                Title = achievement.Title,
+                Description = achievement.Description,
+                Points = achievement.Points,
+                ImageUrl = achievement.ImageUrl
+            });
+        }
+
+        return userDto;
     }
 
     public async Task<Guid> CreateUserAsync(UserDto userDto, CancellationToken cancellationToken = default)

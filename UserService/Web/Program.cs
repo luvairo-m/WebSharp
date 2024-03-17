@@ -1,3 +1,4 @@
+using AchievementServiceConnectionLib.Extensions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Contexts;
@@ -25,6 +26,8 @@ builder.Services.AddDbContext<UserContext>(options =>
     options.UseNpgsql(connection + builder.Configuration["DbPassword"],
         contextOptions => contextOptions.MigrationsAssembly("Web"));
 });
+
+builder.Services.AddAchievementConnectionLogic();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

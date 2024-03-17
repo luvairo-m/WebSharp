@@ -8,6 +8,7 @@ namespace Services;
 internal class ExperienceService : IExperienceService
 {
     private const int pointsPerLevel = 300;
+
     private readonly IRepositoryManager repositoryManager;
 
     public ExperienceService(IRepositoryManager repositoryManager)
@@ -37,11 +38,5 @@ internal class ExperienceService : IExperienceService
 
         repositoryManager.Users.UpdateUser(updatedUser);
         await repositoryManager.SaveChangesAsync(cancellationToken);
-    }
-
-    // Точка расширения для задания с Http-взаимодействием.
-    public Task InvalidateUserAsync(Guid userId)
-    {
-        throw new NotImplementedException();
     }
 }
